@@ -1,0 +1,9 @@
+# Dockerfile for MySQL
+FROM mysql:5.7
+
+ENV MYSQL_DATABASE=exampledb \
+    MYSQL_USER=user \
+    MYSQL_PASSWORD=pass \
+    MYSQL_ROOT_PASSWORD=rootpass
+
+EXPOSE 3306
