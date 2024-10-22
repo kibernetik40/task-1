@@ -1,0 +1,47 @@
+---
+- hosts: webservers
+  become: true
+  tasks:
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
+        state: present
+      become: true
+
+    - name: Ensure Docker Compose is installed
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-`uname -s`-`uname -m`
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      become: true
+
+    - name: Create project directory
+      file:
+        path: /srv/myapp
+        state: directory
+
+    - name: Copy project files
+      copy:
+        src: "{{ item }}"
+        dest: /srv/myapp/
+      with_items:
+        - docker-compose.yml
+        - Dockerfile.nginx
+        - Dockerfile.php
+        - Dockerfile.mysql
+        - nginx.conf
+
+    - name: Generate nginx config
+      template:
+        src: nginx.conf.j2
+        dest: /srv/myapp/nginx.conf
+
+    - name: Start the application
+      shell: docker-compose up -d
+      args:
+        chdir: /srv/myapp
+
+    - name: Ensure nginx is running
+      shell: docker-compose restart nginx
+      args:
+        chdir: /srv/myapp
